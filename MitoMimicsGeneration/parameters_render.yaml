@@ -1,0 +1,20 @@
+save_load_params:
+  sim_save_path: sim_output/
+  out_folder: render_output/
+  do_compress: True
+render_params:
+  save_rate: 8
+  render_mult: 2
+  save_mult: 0.5
+  randomness_seed: False
+invis_params:
+  invis_num_low: 0
+  invis_num_high: 5
+  invis_size_low: 18
+  invis_size_high: 48
+fission_fusion_locs:
+  # options:  cube_3, cube_5, square_3, square_5, ball_5, circle_5
+  shape_choice: cube_3
+
+
+
