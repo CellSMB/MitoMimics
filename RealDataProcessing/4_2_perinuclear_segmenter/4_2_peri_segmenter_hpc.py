@@ -111,10 +111,12 @@ def process_perinuclear_mask(raw_arr, instance_arr, output_path, sigma_value=10,
     transition_filename = output_path.replace('.npz','perinuclear_transition_instance_masks.npz')
     telenuclear_filename = output_path.replace('.npz', 'telenuclear_instance_masks.npz')
     binary_masks_filename = output_path.replace('.npz', 'perinuclear_binary_masks.npz')
+    combined_perinuclear_transition_filename = output_path.replace('.npz','full_combined_perinuclear_instance_masks.npz')
 
     perinuclear_full = np.zeros((num_frames, height, width), dtype=np.uint32)
     transition_full = np.zeros((num_frames, height, width), dtype=np.uint32)
     telenuclear_full = np.zeros((num_frames, height, width), dtype=np.uint32)
+    combined_perinuclear_transition_full = np.zeros((num_frames, height, width), dtype=np.uint32)
 
     params = (sigma_value, thresh_adj_mult, min_obj_size, overlap_thresh, transition_thresh, window_size)
 
@@ -165,6 +167,7 @@ def process_perinuclear_mask(raw_arr, instance_arr, output_path, sigma_value=10,
                 perinuclear_full[frame_idx] = perinuclear_labels
                 transition_full[frame_idx] = transition_labels
                 telenuclear_full[frame_idx] = telenuclear_labels
+                combined_perinuclear_transition_full[frame_idx] = perinuclear_labels + transition_labels
                 
                 pbar.update(1)
                 del perinuclear_labels, telenuclear_labels, transition_labels
@@ -176,10 +179,11 @@ def process_perinuclear_mask(raw_arr, instance_arr, output_path, sigma_value=10,
     np.savez_compressed(transition_filename, data=transition_full)
     np.savez_compressed(telenuclear_filename, data=telenuclear_full)
     np.savez_compressed(binary_masks_filename, data=binary_masks_full)
+    np.savez_compressed(combined_perinuclear_transition_filename, data=combined_perinuclear_transition_full)
 
     total_time = time.time() - start_time
 
-    del perinuclear_full, telenuclear_full, binary_masks_full, transition_full
+    del perinuclear_full, telenuclear_full, binary_masks_full, transition_full, combined_perinuclear_transition_full
     gc.collect()
 
     print(f"\n Total Processing Time: {total_time}")

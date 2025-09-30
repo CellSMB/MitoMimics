@@ -12,6 +12,7 @@ import os
 import pickle
 import zipfile
 from pathlib import Path
+import gc
 
 # Third-party imports
 import numpy as np
@@ -20,12 +21,13 @@ from skimage.measure import regionprops_table
 from tqdm import tqdm
 
 
+
 #### ------------------------
 #### Sample Loading
 #### ------------------------
 
 
-def setup_data_path(sample_number, root_data_directory=""):
+def setup_data_path(sample_number, root_data_directory="", output_base_directory="processed_outputs"):
     """
     Set up the sample folder and output analysis directory.
 
@@ -37,15 +39,18 @@ def setup_data_path(sample_number, root_data_directory=""):
         tuple: Paths to the sample folder and output directory.
     """
 
+    # Input data path
     sample_folder = os.path.join(os.getcwd(), root_data_directory, str(sample_number))
-    analysis_output_folder = f"{sample_folder}/processed_data_analysis"
-    # Folder to store data for analysis
+
+    # Output path in "processed_outputs/sample_number/processed_data_analysis"
+    output_root = os.path.join(os.getcwd(), output_base_directory, str(sample_number))
+    analysis_output_folder = os.path.join(output_root, "processed_data_analysis")
     os.makedirs(analysis_output_folder, exist_ok=True)
 
     return sample_folder, analysis_output_folder
 
 
-def load_data(sample_folder, load_telenuclear=False, load_perinuclear=False, load_transition=False):
+def load_data(sample_folder, load_telenuclear=False, load_perinuclear=False, load_transition=False, load_combined=False, in_memory=False):
     """
     Load instance mask data and optional sub-region datasets for a given sample.
 
@@ -54,6 +59,8 @@ def load_data(sample_folder, load_telenuclear=False, load_perinuclear=False, loa
         load_telenuclear (bool): Whether to load the telenuclear dataset.
         load_perinuclear (bool): Whether to load the perinuclear dataset.
         load_transition (bool): Whether to load the transition dataset.
+        load_combined (bool): Whether to load the combined perinuclear and transition (complete perinuclear region) dataset.
+        in_memory (bool): Load all data into memory (useful for HPC data processing, True) or extract data and memory-map to reduce memory overhead (useful for local data processing with limitewd RAM, False)
 
     Returns:
         tuple: Main instance mask, individual graph of object skeletons, and optionally loaded sub-region datasets.
@@ -61,16 +68,19 @@ def load_data(sample_folder, load_telenuclear=False, load_perinuclear=False, loa
 
     # LOAD INSTANCE MASKS
     # Path to instance masks .npz file
-    if not Path(os.path.join(sample_folder, 'instance_mask_extracted_npz/arr_0.npy')).exists():
+    instance_mask_npz_file = os.path.join(os.getcwd(), sample_folder, 'instance_masks.npz')
+    if in_memory:
+        with np.load(instance_mask_npz_file, allow_pickle=False) as npz:
+            instance_data = npz['arr_0']
+    else:
+        if not Path(os.path.join(sample_folder, 'instance_mask_extracted_npz/arr_0.npy')).exists():
+            
+            # Extract the .npz file manually
+            with zipfile.ZipFile(instance_mask_npz_file, 'r') as zip_ref:
+                zip_ref.extractall(os.path.join(os.getcwd(), sample_folder, 'instance_mask_extracted_npz'))
 
-        instance_mask_npz_file = os.path.join(os.getcwd(), sample_folder, 'instance_masks.npz')
-        
-        # Extract the .npz file manually
-        with zipfile.ZipFile(instance_mask_npz_file, 'r') as zip_ref:
-            zip_ref.extractall(os.path.join(os.getcwd(), sample_folder, 'instance_mask_extracted_npz'))
-
-    # memory-map the individual .npy files in the extracted folder
-    instance_data = np.load(os.path.join(os.getcwd(), sample_folder, 'instance_mask_extracted_npz', 'arr_0.npy'), mmap_mode='r')
+        # memory-map the individual .npy files in the extracted folder
+        instance_data = np.load(os.path.join(os.getcwd(), sample_folder, 'instance_mask_extracted_npz', 'arr_0.npy'), mmap_mode='r')
 
 
 
@@ -84,41 +94,68 @@ def load_data(sample_folder, load_telenuclear=False, load_perinuclear=False, loa
     telenuclear_instance_data = None
     perinuclear_instance_data = None
     transition_instance_data = None
+    combined_perinuclear_instance_data = None
 
     if load_telenuclear:
         try:
-            path = os.path.join(sample_folder, 'perinuclear_segmentations/telenuclear_instance_mask_extracted_npz/data.npy')
-            if not Path(path).exists():
-                zip_path = os.path.join(sample_folder, 'perinuclear_segmentations/telenuclear_instance_masks.npz')
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(os.path.dirname(path))
-            telenuclear_instance_data = np.load(path, mmap_mode='r')
+            zip_path = os.path.join(sample_folder, 'perinuclear_segmentations/telenuclear_instance_masks.npz')
+            if in_memory:
+                with np.load(zip_path, allow_pickle=False) as npz:
+                    telenuclear_instance_data = npz['data']
+            else:
+                path = os.path.join(sample_folder, 'perinuclear_segmentations/telenuclear_instance_mask_extracted_npz/data.npy')
+                if not Path(path).exists():
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(os.path.dirname(path))
+                telenuclear_instance_data = np.load(path, mmap_mode='r')
         except Exception as e:
             print(f"Warning: Failed to load telenuclear data. Error: {e}")
 
     if load_perinuclear:
         try:
-            path = os.path.join(sample_folder, 'perinuclear_segmentations/true_perinuclear_instance_mask_extracted_npz/data.npy')
-            if not Path(path).exists():
-                zip_path = os.path.join(sample_folder, 'perinuclear_segmentations/true_perinuclear_instance_masks.npz')
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(os.path.dirname(path))
-            perinuclear_instance_data = np.load(path, mmap_mode='r')
+            zip_path = os.path.join(sample_folder, 'perinuclear_segmentations/true_perinuclear_instance_masks.npz')
+            if in_memory:
+                with np.load(zip_path, allow_pickle=False) as npz:
+                    perinuclear_instance_data = npz['data']
+            else:
+                path = os.path.join(sample_folder, 'perinuclear_segmentations/true_perinuclear_instance_mask_extracted_npz/data.npy')
+                if not Path(path).exists():
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(os.path.dirname(path))
+                perinuclear_instance_data = np.load(path, mmap_mode='r')
         except Exception as e:
             print(f"Warning: Failed to load perinuclear data. Error: {e}")
 
     if load_transition:
         try:
-            path = os.path.join(sample_folder, 'perinuclear_segmentations/perinuclear_transition_instance_mask_extracted_npz/data.npy')
-            if not Path(path).exists():
-                zip_path = os.path.join(sample_folder, 'perinuclear_segmentations/perinuclear_transition_instance_masks.npz')
-                with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(os.path.dirname(path))
-            transition_instance_data = np.load(path, mmap_mode='r')
+            zip_path = os.path.join(sample_folder, 'perinuclear_segmentations/perinuclear_transition_instance_masks.npz')
+            if in_memory:
+                with np.load(zip_path, allow_pickle=False) as npz:
+                    transition_instance_data = npz['data']
+            else:
+                path = os.path.join(sample_folder, 'perinuclear_segmentations/perinuclear_transition_instance_mask_extracted_npz/data.npy')
+                if not Path(path).exists():
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(os.path.dirname(path))
+                transition_instance_data = np.load(path, mmap_mode='r')
         except Exception as e:
             print(f"Warning: Failed to load transition data. Error: {e}")
+    if load_combined:
+        try:
+            zip_path = os.path.join(sample_folder, 'perinuclear_segmentations/full_combined_perinuclear_instance_masks.npz')
+            if in_memory:
+                with np.load(zip_path, allow_pickle=False) as npz:
+                    combined_perinuclear_instance_data = npz['data']
+            else:
+                path = os.path.join(sample_folder, 'perinuclear_segmentations/full_combined_perinuclear_instance_mask_extracted_npz/data.npy')
+                if not Path(path).exists():
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(os.path.dirname(path))
+                combined_perinuclear_instance_data = np.load(path, mmap_mode='r')
+        except Exception as e:
+            print(f"Warning: Failed to load combined perinuclear/transition data. Error: {e}")
 
-    return instance_data, pos_matching_graph, telenuclear_instance_data, perinuclear_instance_data, transition_instance_data
+    return instance_data, pos_matching_graph, telenuclear_instance_data, perinuclear_instance_data, transition_instance_data, combined_perinuclear_instance_data
 
 
 
@@ -128,7 +165,7 @@ def load_data(sample_folder, load_telenuclear=False, load_perinuclear=False, loa
 #### --------------------------------
 
 
-def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_step, telenuclear_mask_data=None, perinuclear_mask_data=None, transition_mask_data=None):
+def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_step, telenuclear_mask_data=None, perinuclear_mask_data=None, transition_mask_data=None, combined_perinuclear_mask_data=None):
     """
     Compute object-level morphological features per frame and optionally assign spatial regions.
 
@@ -139,6 +176,7 @@ def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_st
         telenuclear_mask_data (np.ndarray): Optional telenuclear region masks.
         perinuclear_mask_data (np.ndarray): Optional perinuclear region masks.
         transition_mask_data (np.ndarray): Optional transition region masks.
+        combined_perinuclear_mask_data (np.ndarray): Optional perinuclear/transition region combined masks.
 
     Returns:
         pd.DataFrame: Combined DataFrame of per-object features over time.
@@ -165,7 +203,7 @@ def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_st
         
         # Assign Region
         region_labels = []
-        if telenuclear_mask_data is not None or perinuclear_mask_data is not None or transition_mask_data is not None:
+        if telenuclear_mask_data is not None or perinuclear_mask_data is not None or transition_mask_data is not None or combined_perinuclear_mask_data is not None:
             for label in df['label']:
                 if np.any(perinuclear_mask_data[t] == label):
                     region_labels.append("Perinuclear")
@@ -173,6 +211,8 @@ def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_st
                     region_labels.append("Telenuclear")
                 elif np.any(transition_mask_data[t] == label):
                     region_labels.append("Transition")
+                elif np.any(combined_perinuclear_mask_data[t] == label):
+                    region_labels.append("Perinuclear (Combined)")
                 else:
                     region_labels.append("Unassigned")  # optional fallback
 
@@ -206,7 +246,7 @@ def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_st
     area_normalised_column = result_df.pop('Area (Normalised)')
     result_df.insert(3, 'Area (Normalised)', area_normalised_column)
     
-    if telenuclear_mask_data is not None or perinuclear_mask_data is not None or transition_mask_data is not None:
+    if telenuclear_mask_data is not None or perinuclear_mask_data is not None or transition_mask_data is not None or combined_perinuclear_mask_data is not None:
         region_column = result_df.pop('Region')
         result_df.insert(2, 'Region', region_column)
 
@@ -258,6 +298,7 @@ def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_st
         result_df.loc[group.index, 'Direction (Degrees)'] = direction_deg
 
     return result_df
+
 
 
 
@@ -405,7 +446,7 @@ def endpoint_branching_properties(pos_matching_graph, time_step=1.0):
 #### ------------------------
 
 
-def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory="", load_telenuclear=False, load_perinuclear=False, load_transition=False):
+def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory="", output_base_directory="processed_outputs", load_telenuclear=False, load_perinuclear=False, load_transition=False, load_combined=False, in_memory=False):
     """
     Main processing pipeline to extract features from sample data and save outputs.
 
@@ -417,20 +458,24 @@ def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory=""
         load_telenuclear (bool): Flag to load telenuclear mask.
         load_perinuclear (bool): Flag to load perinuclear mask.
         load_transition (bool): Flag to load transition mask.
+        load_combined (bool): Flag to load combined perinuclear/transition mask.
+        in_memory (bool): Load all data into memory (useful for HPC data processing, True) or extract data and memory-map to reduce memory overhead (useful for local data processing with limitewd RAM, False)
 
     Returns:
         None
     """
 
     # Assign Sample Folders
-    sample_folder, analysis_output_folder = setup_data_path(sample_number=sample_number, root_data_directory=root_data_directory)
+    sample_folder, analysis_output_folder = setup_data_path(sample_number=sample_number, root_data_directory=root_data_directory, output_base_directory=output_base_directory)
 
     # Load Data
-    instance_data, pos_matching_graph, telenuclear_instance_data, perinuclear_instance_data, transition_instance_data = load_data(
+    instance_data, pos_matching_graph, telenuclear_instance_data, perinuclear_instance_data, transition_instance_data, combined_perinuclear_instance_data = load_data(
         sample_folder,
         load_telenuclear=load_telenuclear,
         load_perinuclear=load_perinuclear,
-        load_transition=load_transition
+        load_transition=load_transition,
+        load_combined=load_combined,
+        in_memory=in_memory
         )
 
     # Pixel Scaling in Microns Per Pixel
@@ -444,7 +489,8 @@ def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory=""
         time_step=time_step,
         telenuclear_mask_data=telenuclear_instance_data,
         perinuclear_mask_data=perinuclear_instance_data,
-        transition_mask_data=transition_instance_data
+        transition_mask_data=transition_instance_data,
+        combined_perinuclear_mask_data=combined_perinuclear_instance_data
         )
     
     # Save general morphological calculations (regionprops) in .csv spreadsheet
@@ -475,6 +521,11 @@ def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory=""
     total_endpoint_branch_per_frame_df.to_csv(output_file, index=False)
     print("Saved total_endpoint_branch_per_frame_df to CSV.")
 
+    del instance_data, pos_matching_graph, telenuclear_instance_data, perinuclear_instance_data, transition_instance_data, combined_perinuclear_instance_data
+    del morphological_features_per_object_df, total_area_per_frame_df, endpoint_branch_per_object_df, total_endpoint_branch_per_frame_df
+
+    gc.collect()
+
 
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description="")
@@ -482,9 +533,13 @@ if __name__=="__main__":
     parser.add_argument("--time_step", type=float, default=0.5, help="Time step between frames in Seconds")
     parser.add_argument("--pixel_res",type=float, default=0.108, help="xy resolution in Microns per Pixel")
     parser.add_argument("--root_data_directory", type=str, help="Parent/root directory where all sample folders are located")
+    parser.add_argument("--output_base_directory", type=str, default="processed_outputs", help="Base directory to store all processed outputs (default: processed_outputs)")
     parser.add_argument("--load_telenuclear", action="store_true", help="Load telenuclear mask if available")
     parser.add_argument("--load_perinuclear", action="store_true", help="Load perinuclear mask if available")
     parser.add_argument("--load_transition", action="store_true", help="Load transition mask if available")
+    parser.add_argument("--load_combined", action="store_true", help="Load combined perinuclear/transition mask if available")
+    parser.add_argument("--in_memory", action="store_true", help="Load all data into memory (useful for HPC data processing, True) or extract data and memory-map to reduce memory overhead (useful for local data processing with limitewd RAM, False)")
+
 
     args=parser.parse_args()
 
@@ -493,6 +548,11 @@ if __name__=="__main__":
          time_step=args.time_step, 
          pixel_res=args.pixel_res,
          root_data_directory=args.root_data_directory,
+         output_base_directory=args.output_base_directory,
          load_telenuclear=args.load_telenuclear,
          load_perinuclear=args.load_perinuclear,
-         load_transition=args.load_transition)
+         load_transition=args.load_transition,
+         load_combined=args.load_combined,
+         in_memory=args.in_memory)
+    
+    # python 5_1_general_feature_analysis.py --sample 33 --time_step 0.5 --pixel_res 0.108 --root_data_directory "raw/" --output_base_directory "processed_outputs/" --load_telenuclear --load_perinuclear --load_transition --load_combined

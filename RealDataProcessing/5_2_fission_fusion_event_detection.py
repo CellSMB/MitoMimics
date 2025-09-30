@@ -13,6 +13,7 @@ import os
 import pickle
 import zipfile
 from pathlib import Path
+import gc
 
 # Third-party libraries
 import numpy as np
@@ -28,7 +29,7 @@ from tqdm import tqdm
 #### ------------------------
 
 
-def setup_data_path(sample_number, root_data_directory=""):
+def setup_data_path(sample_number, root_data_directory="", output_base_directory="processed_outputs"):
     """
     Set up the sample folder and output analysis directory.
 
@@ -40,15 +41,18 @@ def setup_data_path(sample_number, root_data_directory=""):
         tuple: Paths to the sample folder and output directory.
     """
 
+    # Input data path
     sample_folder = os.path.join(os.getcwd(), root_data_directory, str(sample_number))
-    analysis_output_folder = f"{sample_folder}/processed_data_analysis"
-    # Folder to store data for analysis
+
+    # Output path in "processed_outputs/sample_number/processed_data_analysis"
+    output_root = os.path.join(os.getcwd(), output_base_directory, str(sample_number))
+    analysis_output_folder = os.path.join(output_root, "processed_data_analysis")
     os.makedirs(analysis_output_folder, exist_ok=True)
 
     return sample_folder, analysis_output_folder
 
 
-def load_data(sample_folder):
+def load_data(sample_folder, in_memory=False):
     """
     Load instance mask data and optional sub-region datasets for a given sample.
 
@@ -62,30 +66,37 @@ def load_data(sample_folder):
 
     # LOAD INSTANCE MASKS
     # Path to instance masks .npz file
-    if not Path(os.path.join(sample_folder, 'instance_mask_extracted_npz/arr_0.npy')).exists():
+    instance_mask_npz_file = os.path.join(os.getcwd(), sample_folder, 'instance_masks.npz')
+    if in_memory:
+        with np.load(instance_mask_npz_file, allow_pickle=False) as npz:
+            instance_data = npz['arr_0']
+    else:
+        if not Path(os.path.join(sample_folder, 'instance_mask_extracted_npz/arr_0.npy')).exists():
+            
+            # Extract the .npz file manually
+            with zipfile.ZipFile(instance_mask_npz_file, 'r') as zip_ref:
+                zip_ref.extractall(os.path.join(os.getcwd(), sample_folder, 'instance_mask_extracted_npz'))
 
-        instance_mask_npz_file = os.path.join(os.getcwd(), sample_folder, 'instance_masks.npz')
-        
-        # Extract the .npz file manually
-        with zipfile.ZipFile(instance_mask_npz_file, 'r') as zip_ref:
-            zip_ref.extractall(os.path.join(os.getcwd(), sample_folder, 'instance_mask_extracted_npz'))
-
-    # memory-map the individual .npy files in the extracted folder
-    instance_data = np.load(os.path.join(os.getcwd(), sample_folder, 'instance_mask_extracted_npz', 'arr_0.npy'), mmap_mode='r')
+        # memory-map the individual .npy files in the extracted folder
+        instance_data = np.load(os.path.join(os.getcwd(), sample_folder, 'instance_mask_extracted_npz', 'arr_0.npy'), mmap_mode='r')
 
 
     # LOAD INSTANCE SKELETONS
     # Path to instance skeleton .npz file
-    if not Path(os.path.join(sample_folder, 'instance_skeleton_extracted_npz/arr_0.npy')).exists():
-        
-        instance_skeleton_npz_file = os.path.join(os.getcwd(), sample_folder, 'instance_skel.npz')
-        
-        # Extract the .npz file manually
-        with zipfile.ZipFile(instance_skeleton_npz_file, 'r') as zip_ref:
-            zip_ref.extractall(os.path.join(os.getcwd(), sample_folder, 'instance_skeleton_extracted_npz'))
+    instance_skeleton_npz_file = os.path.join(os.getcwd(), sample_folder, 'instance_skel.npz')
+    if in_memory:
+        with np.load(instance_skeleton_npz_file, allow_pickle=False) as npz:
+            instance_skeleton = npz['arr_0']
+    else:
+        if not Path(os.path.join(sample_folder, 'instance_skeleton_extracted_npz/arr_0.npy')).exists():
+            
+            
+            # Extract the .npz file manually
+            with zipfile.ZipFile(instance_skeleton_npz_file, 'r') as zip_ref:
+                zip_ref.extractall(os.path.join(os.getcwd(), sample_folder, 'instance_skeleton_extracted_npz'))
 
-    # memory-map the individual .npy files in the extracted folder
-    instance_skeleton = np.load(os.path.join(os.getcwd(), sample_folder, 'instance_skeleton_extracted_npz', 'arr_0.npy'), mmap_mode='r')
+        # memory-map the individual .npy files in the extracted folder
+        instance_skeleton = np.load(os.path.join(os.getcwd(), sample_folder, 'instance_skeleton_extracted_npz', 'arr_0.npy'), mmap_mode='r')
 
 
 
@@ -104,15 +115,21 @@ def load_data(sample_folder):
 #### ------------------------
 
 
-def event_mechanism_detection(matching_graph, time_step=0.5):
+def event_mechanism_detection(matching_graph, instance_data, time_step=0.5):
     """
-    XYX
+    Analyze a temporal object matching graph to identify generation and termination mechanisms
+    (e.g., Fission, Fusion, Spontaneous) for each tracked object.
 
     Args:
+        matching_graph (networkx.DiGraph): A directed graph where nodes are (frame, object_id) 
+                                           and edges represent temporal correspondence.
+        time_step (float): Time between frames, used to convert frame indices to seconds.
 
     Returns:
-        mechanism_df
+        pd.DataFrame: DataFrame containing object labels and their generation/termination 
+                      frames, times, persistence, and mechanism classifications.
     """
+    
 
     # Dictionary to store the generation and termination mechanism of each object
     generation_termination_mechanisms = {
@@ -155,6 +172,19 @@ def event_mechanism_detection(matching_graph, time_step=0.5):
         else:
             termination_mechanism = 'Fission/Fusion' if any(len(list(matching_graph.predecessors(successor))) > 1 for successor in matching_graph.successors(last_time_step_node)) else 'Fission'
         
+        # Step 3: Check if object exists at generation and termination frames in the cropped region (if cropped, else nothing changes)
+        generation_frame = first_time_step_node[0]
+        termination_frame = last_time_step_node[0]
+
+        generation_exists = (0 <= generation_frame < instance_data.shape[0] and np.any(instance_data[generation_frame] == object_id))
+        termination_exists = (0 <= termination_frame < instance_data.shape[0] and np.any(instance_data[termination_frame] == object_id))
+
+        if not generation_exists and generation_mechanism in ['Fission', 'Fusion', 'Fission/Fusion']:
+            generation_mechanism = 'Cropped'
+
+        if not termination_exists and termination_mechanism in ['Fission', 'Fusion', 'Fission/Fusion']:
+            termination_mechanism = 'Cropped'
+
         # Store the results for this object ID
         generation_termination_mechanisms['Label'].append(object_id)
         generation_termination_mechanisms['Generation Frame'].append(first_time_step_node[0])
@@ -351,7 +381,10 @@ def process_row(row, mechanism_type, part_type, matching_graph, instance_data, i
     elif mechanism_type == 'Fission/Fusion' and part_type == 'Termination':
         frame = int(2 * row['Time of Termination (Seconds)'])
         node_ids = list(matching_graph.successors((frame, object_id)))
-        
+    
+    # Filter masks which have been cropped or edited from instance_data
+    node_ids = [(frame_time, obj_id) for (frame_time, obj_id) in node_ids if 0 <= frame_time < instance_data.shape[0] and np.any(instance_data[frame_time] == obj_id)]
+
     # Generate masks for the split instances and skeletons
     instance_masks = [instance_data[node[0], :, :] == node[1] for node in node_ids]
     skeleton_masks = [instance_skeleton[node[0], :, :] == node[1] for node in node_ids]
@@ -435,12 +468,21 @@ def calculate_event_coordinates_in_chunks(mechanism_type, part_type, matching_gr
 
 def add_event_locations_mechanism_df(mechanism_df, matching_graph, all_fission_coordinates, all_fusion_coordinates, time_step=0.5):
     """
-    XYX
+    Augment the mechanism DataFrame with spatial coordinates of fission and fusion events.
+
+    For each object row, the function assigns spatial coordinates to the generation and/or 
+    termination events if they correspond to a fission or fusion.
 
     Args:
+        mechanism_df (pd.DataFrame): DataFrame containing object lifecycle and mechanism metadata.
+        matching_graph (networkx.DiGraph): Temporal graph of object correspondences.
+        all_fission_coordinates (dict): Dictionary mapping (Y, X) coordinate tuples to object ID sets for fission.
+        all_fusion_coordinates (dict): Dictionary mapping (Y, X) coordinate tuples to object ID sets for fusion.
+        time_step (float): Time between frames, used to resolve time indexing.
 
     Returns:
-        mechanism_df
+        pd.DataFrame: Updated mechanism_df with four new columns for event X and Y coordinates 
+                      at generation and termination points.
     """
     
     # Initialize empty columns for both generation and termination fission locations
@@ -536,31 +578,33 @@ def add_event_locations_mechanism_df(mechanism_df, matching_graph, all_fission_c
 #### ------------------------
 
 
-def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory=""):
+def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory="", output_base_directory="processed_outputs", in_memory=False):
     """
-    Main processing pipeline to extract features from sample data and save outputs.
+    Main processing function to load data, detect event mechanisms, localize event coordinates,
+    and save output CSV summarizing mitochondrial dynamics.
 
     Args:
-        sample_number (int): Sample ID number to process.
-        time_step (float): Time step in seconds between frames.
-        pixel_res (float): Pixel resolution in microns.
-        root_data_directory (str): Optional base directory for sample folders (default current directory of script).
+        sample_number (int): ID of the sample to process (used to construct paths).
+        time_step (float): Time interval between frames in seconds.
+        pixel_res (float): Pixel resolution in microns/pixel (used for scaling).
+        root_data_directory (str): Base directory containing sample folders (default: current working directory).
+        in_memory (bool): Whether to load data into memory (True) or memory-map extracted arrays (False).
 
     Returns:
-        None
+        None. Saves the analysis output to CSV at the corresponding sample's processed data directory.
     """
 
     # Assign Sample Folders
-    sample_folder, analysis_output_folder = setup_data_path(sample_number=sample_number, root_data_directory=root_data_directory)
+    sample_folder, analysis_output_folder = setup_data_path(sample_number=sample_number, root_data_directory=root_data_directory, output_base_directory=output_base_directory)
 
     # Pixel Scaling in Microns Per Pixel
     micron_per_pixel = pixel_res/2 
 
     # Load Data
-    instance_data, instance_skeleton, matching_graph = load_data(sample_folder)
+    instance_data, instance_skeleton, matching_graph = load_data(sample_folder=sample_folder, in_memory=in_memory)
 
     # Align objects with generation and termination event mechanisms
-    mechanism_df = event_mechanism_detection(matching_graph=matching_graph, time_step=time_step)
+    mechanism_df = event_mechanism_detection(matching_graph=matching_graph, instance_data=instance_data, time_step=time_step)
 
     # Detect Fission and Fusion Event Coordinates
     all_fission_coordinates = calculate_event_coordinates_in_chunks('Fission', 'Termination', matching_graph, instance_data, instance_skeleton, mechanism_df, chunk_size=300)
@@ -574,6 +618,9 @@ def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory=""
     mechanism_df.to_csv(output_file, index=False)
     print("Saved mechanism_df to CSV.")
 
+    del instance_data, instance_skeleton, matching_graph, mechanism_df, all_fission_coordinates, all_fusion_coordinates
+    gc.collect()
+
 
 
 if __name__=='__main__':
@@ -582,7 +629,12 @@ if __name__=='__main__':
     parser.add_argument("--time_step", type=float, default=0.5, help="Time step between frames in Seconds")
     parser.add_argument("--pixel_res",type=float, default=0.108, help="xy resolution in Microns per Pixel")
     parser.add_argument("--root_data_directory", type=str, help="Parent/root directory where all sample folders are located")
+    parser.add_argument("--output_base_directory", type=str, default="processed_outputs", help="Base directory to store all processed outputs (default: processed_outputs)")
+    parser.add_argument("--in_memory", action="store_true", help="Load all data into memory (useful for HPC data processing, True) or extract data and memory-map to reduce memory overhead (useful for local data processing with limitewd RAM, False)")
+
     args=parser.parse_args()
 
     # Process the sample
-    main(sample_number=args.sample, time_step=args.time_step, pixel_res=args.pixel_res, root_data_directory=args.root_data_directory)
+    main(sample_number=args.sample, time_step=args.time_step, pixel_res=args.pixel_res, root_data_directory=args.root_data_directory, output_base_directory=args.output_base_directory, in_memory=args.in_memory)
+
+    # python 5_2_fission_fusion_event_detection.py --sample 33 --time_step 0.5 --pixel_res 0.108 --root_data_directory "input_data_crop/" --output_base_directory "processed_outputs/"

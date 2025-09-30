@@ -49,7 +49,7 @@ source ~/venvs/venv-3.10.4-mito_branch_seg/bin/activate
 
 
 # The job command(s):
-python 1_branch_segmentation_final_hpc.py \
+python 4_1_branch_segmenter_hpc.py \
   --data_dir ${DATA_DIR} \
   --output_dir ${OUTPUT_DIR} \
   --sample ${SAMPLE} \

@@ -15,7 +15,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=180G
-#SBATCH --array=0-22
+#SBATCH --array=0-42
 
 # The maximum running time of the job in days-hours:mins:sec
 #SBATCH --time=0-00:40:00
@@ -32,8 +32,8 @@ DATA_DIR="input_data/"
 OUTPUT_DIR="processed_outputs/"
 
 # Define samples and associated threshold values to process
-SAMPLES=(1 5 6 7 8 9 10 11 12 13 14 16 33 34 35 36 37 38 39 40 41 42 43)
-THRESH_VALUES=(1.5 1.4 0.8 1.2 1.1 1.1 1.0 1.2 1.2 1.2 1.3 1.1 1.3 1.2 1.2 1.3 1.3 1.4 1.2 1.4 1.5 1.4 1.5)
+SAMPLES=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43)
+THRESH_VALUES=(1.5 1.3 1.3 1.4 1.4 0.8 1.2 1.1 1.1 1.0 1.2 1.2 1.2 1.3 1.1 1.1 1.2 1.1 1.1 1.0 1.6 1.5 1.6 1.4 1.2 1.3 1.3 1.3 1.4 1.9 1.5 1.3 1.3 1.2 1.2 1.3 1.3 1.4 1.2 1.4 1.5 1.4 1.5)
 
 SAMPLE=${SAMPLES[$SLURM_ARRAY_TASK_ID]}
 THRESH=${THRESH_VALUES[$SLURM_ARRAY_TASK_ID]}
@@ -51,7 +51,7 @@ source ~/venvs/venv-3.10.4-mito_peri_seg/bin/activate
 
 
 # The job command(s):
-python 1_peri_segmentation_final_hpc.py \
+python 4_2_peri_segmenter_hpc.py \
   --data_dir ${DATA_DIR} \
   --output_dir ${OUTPUT_DIR} \
   --sample ${SAMPLE} \
