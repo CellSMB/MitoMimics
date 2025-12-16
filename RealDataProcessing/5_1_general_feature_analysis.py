@@ -302,13 +302,13 @@ def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_st
 
 
 
-def total_area_per_frame_metrics(result_df, micron_per_pixel=1.0):
+def total_area_per_frame_metrics(result_df):#, micron_per_pixel=1.0):
     """
     Calculate total and average object area per frame, and normalize to initial values.
 
     Args:
-        result_df (pd.DataFrame): DataFrame with per-object features over time.
-        micron_per_pixel (float): Spatial resolution for area scaling.
+        result_df (pd.DataFrame): DataFrame with per-object features over time. Assumes result_df['Area'] is already in physical units (e.g. μm²).
+        # micron_per_pixel (float): Spatial resolution for area scaling.
 
     Returns:
         pd.DataFrame: Per-frame area statistics including normalization.
@@ -337,8 +337,8 @@ def total_area_per_frame_metrics(result_df, micron_per_pixel=1.0):
     total_area_per_frame['Average Mitochondrial Area (Normalised)'] = total_area_per_frame['Average Mitochondrial Area']/average_area_at_start
 
     # Convert area-related features (squared units)
-    total_area_per_frame['Total Mitochondrial Area'] *= micron_per_pixel**2
-    total_area_per_frame['Average Mitochondrial Area'] *= micron_per_pixel**2
+    # total_area_per_frame['Total Mitochondrial Area'] *= micron_per_pixel**2
+    # total_area_per_frame['Average Mitochondrial Area'] *= micron_per_pixel**2
 
     return total_area_per_frame
 
@@ -500,7 +500,7 @@ def main(sample_number=1, time_step=0.5, pixel_res=0.108, root_data_directory=""
 
 
     # Total and average areas per frame of object mass
-    total_area_per_frame_df = total_area_per_frame_metrics(result_df=morphological_features_per_object_df, micron_per_pixel=micron_per_pixel)
+    total_area_per_frame_df = total_area_per_frame_metrics(result_df=morphological_features_per_object_df)#, micron_per_pixel=micron_per_pixel)
     
     # Save total and average area metrics per frame in .csv spreadsheet
     output_file = f"{analysis_output_folder}/total_area_per_frame_metrics.csv"

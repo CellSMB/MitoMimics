@@ -306,13 +306,13 @@ def general_morphological_metrics(instance_mask_data,  micron_per_pixel, time_st
 
 
 
-def total_area_per_frame_metrics(result_df, micron_per_pixel=1.0):
+def total_area_per_frame_metrics(result_df):#, micron_per_pixel=1.0):
     """
     Calculate total and average object area per frame, and normalize to initial values.
 
     Args:
-        result_df (pd.DataFrame): DataFrame with per-object features over time.
-        micron_per_pixel (float): Spatial resolution for area scaling.
+        result_df (pd.DataFrame): DataFrame with per-object features over time. Assumes result_df['Area'] is already in physical units (e.g. μm²).
+        # micron_per_pixel (float): Spatial resolution for area scaling.
 
     Returns:
         pd.DataFrame: Per-frame area statistics including normalization.
@@ -363,8 +363,8 @@ def total_area_per_frame_metrics(result_df, micron_per_pixel=1.0):
     # total_area_per_frame['Average Mitochondrial Area (Normalised)'] = total_area_per_frame['Average Mitochondrial Area']/average_area_at_start
 
     # Convert area-related features (squared units)
-    total_area_per_frame['Total Mitochondrial Area'] *= micron_per_pixel**2
-    total_area_per_frame['Average Mitochondrial Area'] *= micron_per_pixel**2
+    # total_area_per_frame['Total Mitochondrial Area'] *= micron_per_pixel**2
+    # total_area_per_frame['Average Mitochondrial Area'] *= micron_per_pixel**2
 
     print(f"Normalization reference taken from time = {initial_time} seconds")
 
@@ -659,7 +659,7 @@ def collect_and_save_fission_fusion_rates(sample_id, condition_name, domain_name
 
 def process_domain(sample_number, condition, domain_name, domain_mask, mechanism_df, time_step, micron_per_pixel, output_dir, bin_size_seconds, time_units):
     result_df = general_morphological_metrics(domain_mask, micron_per_pixel, time_step)
-    total_area = total_area_per_frame_metrics(result_df, micron_per_pixel=micron_per_pixel)
+    total_area = total_area_per_frame_metrics(result_df)#, micron_per_pixel=micron_per_pixel)
     domain_mechanism_df = extract_microdomain_fission_fusion_mechanisms(domain_mask, mechanism_df)
     rate_dict = fission_fusion_rate_calculation(domain_mask, domain_mechanism_df, total_area, time_step, domain_specific=True, time_units=time_units)
     collect_and_save_fission_fusion_rates(sample_number, condition, domain_name, rate_dict, f"{output_dir}/fission_fusion_summary.csv")
