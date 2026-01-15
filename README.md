@@ -1,9 +1,20 @@
-# Mitochondrial Dynamics Microscopy Data Simulator (MitoDynaMicSim)
+
+<p align="center">
+  <img src="docs/assets/MitoMimics_Logo.png" alt="MitoMimics Logo">
+</p>
+
+<p align="center">
+  <em>
+    Synthetic Microscopy Timelapse Data Generation for Zero-Annotation AI Mitochondrial Segmentation and Tracking
+  </em>
+</p>
+
+---
 
 
 ## Introduction
 
-The Mitochondrial Dynamics Microscopy Data Simulator (MitoDynaMicSim) is designed to simulate temporal mitochondrial dynamics-based microscopy data. MitoDynaMicSim employs a Python-based rendering pipeline to generate synthetic widefield microscopy datasets of mitochondrial dynamics events. Our algorithmic toolset provides researchers a means for testing and validating AI-based models, providing both ease of use and flexibility.
+MitoMimics is designed to simulate temporal mitochondrial dynamics-based microscopy data. MitoMimics employs a Python-based rendering pipeline to generate synthetic widefield microscopy datasets of mitochondrial dynamics events. Our algorithmic toolset provides researchers a means for testing and validating AI-based models, providing both ease of use and flexibility.
 
 ## Features
 
@@ -22,7 +33,7 @@ The Mitochondrial Dynamics Microscopy Data Simulator (MitoDynaMicSim) is designe
 
 ## Installation
 
-To install MitoDynaMicSim, follow these steps:
+To install MitoMimics, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/aidanpcquinn/mito_sim_pack.git`
 2. Navigate to the project directory: `cd mito_sim_pack`
@@ -30,7 +41,7 @@ To install MitoDynaMicSim, follow these steps:
 
 ## Using the Simulation
 
-To use MitoDynaMicSim, follow these steps:
+To use MitoMimics, follow these steps:
 
 1. Open a terminal activate the conda environment with `conda activate mito_sim`
 2. Run the simulation script: `python sim.py`
@@ -44,3 +55,24 @@ To use MitoDynaMicSim, follow these steps:
 
 1. See `view_output.ipynb`
 2. Demo output at `./out_stack/test_state_output.pkl`
+
+## Citation
+
+## License
+
+## Contact
+For any questions, feedback, or potential collaborations, please contact the original authors of MitoMimics: 
+
+- **Aidan Quinn** 
+
+  📧 [aidanpcquinn@gmail.com](mailto:aidanpcquinn@gmail.com)
+
+  🐙 Github: [@aidanpcquinn](https://github.com/aidanpcquinn)
+
+- **Volkan Ozcoban** 
+
+  📧 [volkanozcoban1@gmail.com](mailto:volkanozcoban1@gmail.com)
+
+  🐙 Github: [@VolkanOzcoban](https://github.com/VolkanOzcoban)
+
+Please include “MitoMimics” in the subject line when contacting us.
