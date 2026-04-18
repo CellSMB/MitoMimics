@@ -10,6 +10,16 @@
 </p>
 
 ---
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/f6d1f509-1c07-4afc-9459-7284797b4c50" 
+    width="100%" 
+    controls="controls" 
+    autoplay="autoplay" 
+    muted="muted" 
+    loop="loop" 
+    style="max-width:100%;">
+  </video>
+</div>
 
 
 ## Introduction
