@@ -58,12 +58,12 @@ To use MitoMimics for dataset generation, follow these steps:
 
 1. Navigate to the MitoMimicsGeneration folder and run the simulation script: `python sim.py --seed 42`
    - This generates the underlying simulation of the mitochondria morphology and dynamics
-   - parameters can be modified by running the editing gui with `python parameter_edit_gui.py`
+   - Parameters can be modified in `parameters.yaml` or with `python parameter_edit_gui.py`
    - The files are saved in `MitoMimicsGeneration/sim_output/42`
    - batch scripts for running multiple jobs `gen_multi_batch_sim.sh`
 2. Run the rendering script with `python renderer.py --seed 42 --cupy True --gpu 0`
    - This renders the simulation into the synthetic microscopy stacks
-   - Parameters can be modified with X
+   - Parameters can be modified in `parameters_render.yaml` or with `python parameter_edit_gui.py`
    - The files are saved in `MitoMimicsGeneration/render_output/42`
    - batch scripts for running multiple jobs `gen_multi_batch_render.sh`
 3. To view the simulated data, run `python sim_napari_viewer.py --loc render_output/42`
