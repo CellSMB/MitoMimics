@@ -1,4 +1,4 @@
-name: mitodynamicsim-cupycuda12x
+name: mitodynamicsim
 channels:
   - conda-forge
   - defaults
@@ -7,21 +7,22 @@ dependencies:
   - ipython
   - jupyterlab
   - matplotlib>=3.7
-  - networkx
-  - numpy
+  - networkx==3.3
+  - numpy<2.0
   - pygame
-  - pymunk
   - python==3.11.8
   - scipy
   - pillow
   - pyyaml
-  - porespy
+  - porespy==2.4.1
   - pytorch==2.1.2
-  - torchvision
+  - torchvision==0.16.1
   - tqdm
-  - scikit-image
+  - scikit-image==0.24.0
   - scikit-learn
-  - opencv
+  - opencv==4.10.0
   - napari
   - pypardiso
   - cupy
+  - pymunk==6.8.1
+  - pyqt

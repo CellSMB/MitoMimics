@@ -29,8 +29,8 @@ def main():
     skeleton_arr = np.load(skeleton_path)
     double_res_arr = np.load(double_res_path)
     
-    skeleton_weights_arr = np.load(skeleton_weights_path)
-    fmask_weights_arr = np.load(fmask_weights_path)
+    #skeleton_weights_arr = np.load(skeleton_weights_path)
+    #fmask_weights_arr = np.load(fmask_weights_path)
 
 
     
@@ -43,8 +43,8 @@ def main():
     
     raw_shape = double_res_arr.shape
     
-    
-    viewer = napari.view_image(np.zeros(raw_shape))
+    viewer = napari.Viewer()
+    viewer.add_image(np.zeros(raw_shape))
 
     
     if real_numpy_location is not None:
@@ -57,8 +57,8 @@ def main():
     skeletonL = viewer.add_labels(skeleton_arr, name = 'Skeleton')
     fmaskL = viewer.add_labels(fmask_arr, name = 'FMASK')
     
-    skeleton_weights = viewer.add_image(skeleton_weights_arr, name = 'skeleton_weights')
-    fmask_weights = viewer.add_image(fmask_weights_arr, name = 'fmask_weights')
+    #skeleton_weights = viewer.add_image(skeleton_weights_arr, name = 'skeleton_weights')
+    #fmask_weights = viewer.add_image(fmask_weights_arr, name = 'fmask_weights')
     
         # switch 1 timestep earlier
     @viewer.bind_key('t')

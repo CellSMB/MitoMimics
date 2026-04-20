@@ -36,22 +36,21 @@ def fission_lockout_function(low = 16*2, high = 16* 64):
 def setup_collision_handler(space, chain_manager, col_loc_store):
     """
     Sets up a collision handler for objects within a pymunk space.
-
-    Parameters:
-    - space: The pymunk Space where the collision handler will be set up.
-    - chain_manager: The manager responsible for handling chain connections upon collisions.
-    - col_loc_store: The collision location store object used to track collision locations.
-
-    This function does not return a value but configures collision handling to trigger chain connections.
     """
 
-    # Setup a collision handler for specific types of collisions
+    # 1. Standard Pymunk 6.x handler registration
     handler = space.add_collision_handler(1, 1)
 
-    # Define the post-solve action for collisions
+    # 2. Define the post-solve action
     handler.post_solve = lambda arbiter, space, data: connect_on_chain_collision(
         arbiter, space, data, chain_manager, col_loc_store
-        )
+    )
+
+    # 3. CRITICAL FOR PYMUNK 6.x: 
+    # The space now only keeps a 'weak reference' to handlers. 
+    # If we don't store this handler in a persistent object, it will be 
+    # garbage collected and collisions will stop working.
+    chain_manager.collision_handler = handler 
 
     return True
 

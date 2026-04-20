@@ -209,7 +209,7 @@ render_display_parameters:
 save_simulation_parameters:
   save_data: true
   save_path: sim_output/
-  sim_length_seconds: 32
+  sim_length_seconds: 6
   sim_name_prefix: depricated
 space_world_parameters:
   fps: 16

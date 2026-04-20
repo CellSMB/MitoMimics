@@ -12,7 +12,7 @@
 
 /sim_output_old_bigmain/*
 
-
+/logic/__pycache__/*
 
 /gt_data_ex/*
 !/gt_data_ex/.gitkeep

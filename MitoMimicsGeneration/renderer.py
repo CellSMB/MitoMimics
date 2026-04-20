@@ -1724,7 +1724,7 @@ if __name__ == "__main__":
     photon_conversion_rate_mito = random.randint(photon_conversion_range[0], photon_conversion_range[1])
     cell_bg_blobiness_add = random.uniform(cell_bg_blobiness_parameter_range[0], cell_bg_blobiness_parameter_range[1])
     bg_blob_impact_factor = random.uniform(bg_blob_impact_factor_range[0], bg_blob_impact_factor_range[1])
-    bg_noise_std = random.choice([random.uniform(cell_bg_noise_1_std_range[0], cell_bg_noise_1_std_range[1]), random.uniform(cell_bg_noise_2_std_range[0], cell_bg_noise_2_std_range[2])])
+    bg_noise_std = random.choice([random.uniform(cell_bg_noise_1_std_range[0], cell_bg_noise_1_std_range[1]), random.uniform(cell_bg_noise_2_std_range[0], cell_bg_noise_2_std_range[1])])
     bg_noise_mean = random.uniform(cell_bg_std_range[0], cell_bg_std_range[1])
     cell_blob_factor = random.randint(cell_blob_factor_range[0],cell_blob_factor_range[1])
     mito_base_morph_size_add = random.randint(mito_thickness_singal_size_range[0], mito_thickness_singal_size_range[1])
