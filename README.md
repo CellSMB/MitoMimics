@@ -22,7 +22,6 @@
 </div>
 
 ## Introduction
-https://github.com/user-attachments/assets/f0d4397d-b33e-489a-8c3f-bf089cde3c9a
 
 MitoMimics is designed to simulate temporal mitochondrial dynamics-based microscopy data. MitoMimics employs a Python-based rendering pipeline to generate synthetic widefield microscopy datasets of mitochondrial dynamics events. Our algorithmic toolset provides researchers a means for testing and validating AI-based models, providing both ease of use and flexibility.
 
