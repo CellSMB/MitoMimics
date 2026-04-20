@@ -13,8 +13,111 @@ invis_params:
   invis_size_low: 18
   invis_size_high: 48
 fission_fusion_locs:
-  # options:  cube_3, cube_5, square_3, square_5, ball_5, circle_5
+  # options: cube_3, cube_5, square_3, square_5, ball_5, circle_5
   shape_choice: cube_3
+fixed_render_params:
+  bg_noise_blob_size: 50
+  cell_bg_conv: 45
+  cell_bg_glow_central_sigma: 600
+  mito_blob_impact_mult: 0.82
+  half_render_mult_factor: 0.25
+  common_peri_area_cutoff: 0.5
+  peri_average_mito_width_add: 3
+dynamic_render_params:
+  photon_conversion_low: 20
+  photon_conversion_high: 30
 
+  cell_bg_blobiness_parameter_low: 0.1
+  cell_bg_blobiness_parameter_high: 0.165
 
+  bg_blob_impact_factor_low: 0.65
+  bg_blob_impact_factor_high: 0.75
 
+  cell_bg_noise_1_std_low: 0.003
+  cell_bg_noise_1_std_high: 0.22
+
+  cell_bg_noise_2_std_low: 0.003
+  cell_bg_noise_2_std_high: 0.01
+
+  cell_bg_std_low: 0.04
+  cell_bg_std_high: 0.17
+
+  cell_blob_factor_low: 2
+  cell_blob_factor_high: 6
+
+  mito_thickness_singal_size_low: -3
+  mito_thickness_singal_size_high: -1
+
+  airy_mito_kernal_size_low: 15
+  airy_mito_kernal_size_high: 21
+
+  peri_singl_width_add_1_low: 16
+  peri_singl_width_add_1_high: 4
+
+  peri_singl_width_add_2_low: 18
+  peri_singl_width_add_2_high: 6
+
+  peri_singl_width_add_3_low: 20
+  peri_singl_width_add_3_high: 8
+
+  peri_morph_width_add_low: 2
+  peri_morph_width_add_high: 7
+
+  peri_morph_kernal_size_low: 11
+  peri_morph_kernal_size_high: 20
+
+  photon_conversion_rate_add_peri_glow_low: 50
+  photon_conversion_rate_add_peri_glow_high: 100
+
+  photon_conversion_rate_add_peri_morph_low: 5
+  photon_conversion_rate_add_peri_morph_high: 20
+
+  cell_bg_scale_factor_low: 1.2
+  cell_bg_scale_factor_high: 1.6
+
+  background_glow_noise_low: 0.0001
+  background_glow_noise_high: 0.04
+
+  mito_segment_consistent_dimness_low: 0.8
+  mito_segment_consistent_dimness_high: 1.2
+
+  blob_size_add_low: 0
+  blob_size_add_high: 3
+
+  num_blobs_low: 5
+  num_blobs_high: 50
+
+  temporal_blob_intensity_mult_low: 0.7
+  temporal_blob_intensity_mult_high: 1.05
+
+  peri_signal_kernal_size_low: 70
+  peri_signal_kernal_size_high: 100
+
+  do_peri_glow_chance: 0.85
+
+  peri_glow_clip_max_low: 0.21
+  peri_glow_clip_max_high: 0.41
+
+  peri_morph_clip_max_low: 0.33
+  peri_morph_clip_max_high: 0.45
+
+  base_mito_clip_max_low: 0.3
+  base_mito_clip_max_high: 0.46
+
+  mito_morph_clip_fraction_factor_low: 0.41
+  mito_morph_clip_fraction_factor_high: 0.53
+
+  max_total_single_low: 0.4
+  max_total_single_high: 0.54
+
+  no_glow_peri_glow_clip_max: 0.002
+  no_glow_peri_morph_clip_max: 0.002
+
+  no_glow_base_mito_clip_max_low: 0.3
+  no_glow_base_mito_clip_max_high: 0.46
+
+  no_glow_mito_morph_clip_fraction_factor_low: 0.41
+  no_glow_mito_morph_clip_fraction_factor_high: 0.53
+
+  no_glow_max_total_single_low: 0.12
+  no_glow_max_total_single_high: 0.23

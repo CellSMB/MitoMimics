@@ -96,114 +96,185 @@ do_compress = parameters['save_load_params']['do_compress']
 
 
 # -----------------------------------------------
-# -------------- PARAMS TO ADDD ----------------------
+# -------------- PARAMS TO ADDD ------------------
 # -----------------------------------------------
 
-    # TOADDPARAMS
+fixed_render_params = parameters['fixed_render_params']
+dynamic_render_params = parameters['dynamic_render_params']
 
 # Fixed Params
+bg_noise_blob_size = fixed_render_params['bg_noise_blob_size']
 
-# ------ BASE BACKGROUND
-# background noise blob size in helpler func
-bg_noise_blob_size = 50
+cell_bg_conv = fixed_render_params['cell_bg_conv']
+cell_bg_glow_central_sigma = fixed_render_params['cell_bg_glow_central_sigma']
 
+mito_blob_impact_mult = fixed_render_params['mito_blob_impact_mult']
 
-# ------ CELL BACKGROUND
+half_render_mult_factor = fixed_render_params['half_render_mult_factor']
 
-# conv factor for the cell bg
-cell_bg_conv = 45
-# central glow distribution (sigma of the gaussian kernal in the center of the cell background)
-cell_bg_glow_central_sigma = 600
+common_peri_area_cutoff = fixed_render_params['common_peri_area_cutoff']
+peri_average_mito_width_add = fixed_render_params['peri_average_mito_width_add']
 
+# Dynamic Params
+photon_conversion_range = (
+    dynamic_render_params['photon_conversion_low'],
+    dynamic_render_params['photon_conversion_high'],
+)
 
-# ------ MITO MORPHOLOGY, PRE CONV
-# multiplaction factor between the base mito morphology and the blob layer
-mito_blob_impact_mult = 0.82
+cell_bg_blobiness_parameter_range = (
+    dynamic_render_params['cell_bg_blobiness_parameter_low'],
+    dynamic_render_params['cell_bg_blobiness_parameter_high'],
+)
 
+bg_blob_impact_factor_range = (
+    dynamic_render_params['bg_blob_impact_factor_low'],
+    dynamic_render_params['bg_blob_impact_factor_high'],
+)
 
-# ------ MITO SIGNAL
+cell_bg_noise_1_std_range = (
+    dynamic_render_params['cell_bg_noise_1_std_low'],
+    dynamic_render_params['cell_bg_noise_1_std_high'],
+)
 
-# mito dimness range
-# half render mult 
-half_render_mult_factor = 0.25
+cell_bg_noise_2_std_range = (
+    dynamic_render_params['cell_bg_noise_2_std_low'],
+    dynamic_render_params['cell_bg_noise_2_std_high'],
+)
 
-# ------ PERI MORPH
+cell_bg_std_range = (
+    dynamic_render_params['cell_bg_std_low'],
+    dynamic_render_params['cell_bg_std_high'],
+)
 
-# cutoff for the averaged peri areas across all frames
-common_peri_area_cutoff = 0.5
-# ammount to add to the peri morphology for the initial averaging
-peri_average_mito_width_add = 3
+cell_blob_factor_range = (
+    dynamic_render_params['cell_blob_factor_low'],
+    dynamic_render_params['cell_blob_factor_high'],
+)
 
+mito_thickness_singal_size_range = (
+    dynamic_render_params['mito_thickness_singal_size_low'],
+    dynamic_render_params['mito_thickness_singal_size_high'],
+)
 
-# DYNAMIC PARAMS
+airy_mito_kernal_size_range = (
+    dynamic_render_params['airy_mito_kernal_size_low'],
+    dynamic_render_params['airy_mito_kernal_size_high'],
+)
 
-# photon conversion rate
-photon_conversion_range = (20,30)
-# blob noise added to the cell background
-cell_bg_blobiness_parameter_range = (0.1,0.165)
-# how much the cell blobiness impacts the cell bg signal
-bg_blob_impact_factor_range = (0.65, 0.75)
-# cell bg noise 
-cell_bg_noise_1_std_range = (0.003, 0.22)
-cell_bg_noise_2_std_range = (0.003, 0.01)
-cell_bg_std_range = (0.04, 0.17)
-#how much blob is multiplied with base
-cell_blob_factor_range = (2,6)
-#thickness of baseline mitosignal offset from base pixel width
-mito_thickness_singal_size_range = (-3,-1)
-# airy conv kernal size
-airy_mito_kernal_size_range = (15,21)
-# peri signal range choices
-peri_singl_width_add_range_1 = (16,4)
-peri_singl_width_add_range_2 = (18,6)
-peri_singl_width_add_range_3 = (20,8)
-# width to add to base morph of peri mito 
-peri_morph_width_add_range = (2,7)
-# kernal size used for blur on  peri mito
-peri_morph_kernal_size_range = (11,20)
-# photon conversion for peri glow
-photon_conversion_rate_add_peri_glow_range = (50,100)
-# photon conversion for peri mito signal 
-photon_conversion_rate_add_peri_morph_range = (5,20)
-# cell background scale multiplier factor range
-cell_bg_scale_factor_range = (1.2,1.6)
-# background glow noise range
-background_glow_noise_range = (0.0001,0.04)
-# mito segment dimmed signal rannge
-mito_segment_consistent_dimness_range = (0.8, 1.2)
-# interferance blob size
-blob_size_add_range = (0,3)
-# number of blobx
-num_blobs_range = (5,50)
-# variance in blob intensity 
-temporal_blob_intensity_mult_range = (0.7,1.05)
-# kernal size for peri signal
-peri_signal_kernal_size_range = (70,100)
+peri_singl_width_add_range_1 = (
+    dynamic_render_params['peri_singl_width_add_1_low'],
+    dynamic_render_params['peri_singl_width_add_1_high'],
+)
 
-# peri glow chance
-do_peri_glow_chance = 0.85
-# peri glow signal values in final composition
-peri_glow_clip_max_range = (0.21,0.41)
-# peri morph signal values in final composition
-peri_morph_clip_max_range = (0.33, 0.45)
-# base mito signal values in final compisition
-base_mito_clip_max_range = (0.3,0.46)
-# mult factor for mito morph with other
-mito_morph_clip_fraction_factor_range = (0.41,0.53)
-# mult value for mito with others
-max_total_single_range = (0.4,0.54)
+peri_singl_width_add_range_2 = (
+    dynamic_render_params['peri_singl_width_add_2_low'],
+    dynamic_render_params['peri_singl_width_add_2_high'],
+)
 
-# peri glow signal values in final composition for no glow samples
-no_glow_peri_glow_clip_max = 0.002
-# peri morph signal values in final composition for no glow samples
-no_glow_peri_morph_clip_max = 0.002
-# base mito signal values in final compisition for no glow samples
-no_glow_base_mito_clip_max_range = (0.3,0.46)
-# mult factor for mito morph with other for no glow samples
-no_glow_mito_morph_clip_fraction_factor_range = (0.41,0.53)
-# mult value for mito with others for no glow samples
-no_glow_max_total_single_range = (0.12,0.23)
+peri_singl_width_add_range_3 = (
+    dynamic_render_params['peri_singl_width_add_3_low'],
+    dynamic_render_params['peri_singl_width_add_3_high'],
+)
 
+peri_morph_width_add_range = (
+    dynamic_render_params['peri_morph_width_add_low'],
+    dynamic_render_params['peri_morph_width_add_high'],
+)
+
+peri_morph_kernal_size_range = (
+    dynamic_render_params['peri_morph_kernal_size_low'],
+    dynamic_render_params['peri_morph_kernal_size_high'],
+)
+
+photon_conversion_rate_add_peri_glow_range = (
+    dynamic_render_params['photon_conversion_rate_add_peri_glow_low'],
+    dynamic_render_params['photon_conversion_rate_add_peri_glow_high'],
+)
+
+photon_conversion_rate_add_peri_morph_range = (
+    dynamic_render_params['photon_conversion_rate_add_peri_morph_low'],
+    dynamic_render_params['photon_conversion_rate_add_peri_morph_high'],
+)
+
+cell_bg_scale_factor_range = (
+    dynamic_render_params['cell_bg_scale_factor_low'],
+    dynamic_render_params['cell_bg_scale_factor_high'],
+)
+
+background_glow_noise_range = (
+    dynamic_render_params['background_glow_noise_low'],
+    dynamic_render_params['background_glow_noise_high'],
+)
+
+mito_segment_consistent_dimness_range = (
+    dynamic_render_params['mito_segment_consistent_dimness_low'],
+    dynamic_render_params['mito_segment_consistent_dimness_high'],
+)
+
+blob_size_add_range = (
+    dynamic_render_params['blob_size_add_low'],
+    dynamic_render_params['blob_size_add_high'],
+)
+
+num_blobs_range = (
+    dynamic_render_params['num_blobs_low'],
+    dynamic_render_params['num_blobs_high'],
+)
+
+temporal_blob_intensity_mult_range = (
+    dynamic_render_params['temporal_blob_intensity_mult_low'],
+    dynamic_render_params['temporal_blob_intensity_mult_high'],
+)
+
+peri_signal_kernal_size_range = (
+    dynamic_render_params['peri_signal_kernal_size_low'],
+    dynamic_render_params['peri_signal_kernal_size_high'],
+)
+
+do_peri_glow_chance = dynamic_render_params['do_peri_glow_chance']
+
+peri_glow_clip_max_range = (
+    dynamic_render_params['peri_glow_clip_max_low'],
+    dynamic_render_params['peri_glow_clip_max_high'],
+)
+
+peri_morph_clip_max_range = (
+    dynamic_render_params['peri_morph_clip_max_low'],
+    dynamic_render_params['peri_morph_clip_max_high'],
+)
+
+base_mito_clip_max_range = (
+    dynamic_render_params['base_mito_clip_max_low'],
+    dynamic_render_params['base_mito_clip_max_high'],
+)
+
+mito_morph_clip_fraction_factor_range = (
+    dynamic_render_params['mito_morph_clip_fraction_factor_low'],
+    dynamic_render_params['mito_morph_clip_fraction_factor_high'],
+)
+
+max_total_single_range = (
+    dynamic_render_params['max_total_single_low'],
+    dynamic_render_params['max_total_single_high'],
+)
+
+no_glow_peri_glow_clip_max = dynamic_render_params['no_glow_peri_glow_clip_max']
+no_glow_peri_morph_clip_max = dynamic_render_params['no_glow_peri_morph_clip_max']
+
+no_glow_base_mito_clip_max_range = (
+    dynamic_render_params['no_glow_base_mito_clip_max_low'],
+    dynamic_render_params['no_glow_base_mito_clip_max_high'],
+)
+
+no_glow_mito_morph_clip_fraction_factor_range = (
+    dynamic_render_params['no_glow_mito_morph_clip_fraction_factor_low'],
+    dynamic_render_params['no_glow_mito_morph_clip_fraction_factor_high'],
+)
+
+no_glow_max_total_single_range = (
+    dynamic_render_params['no_glow_max_total_single_low'],
+    dynamic_render_params['no_glow_max_total_single_high'],
+)
 
 # ---------------------- derived vars ----------------------
 
@@ -215,7 +286,9 @@ if randomness_seed:
     np.random.seed(randomness_seed)
     random.seed(randomness_seed)
     torch.manual_seed(randomness_seed)
-    cp.random.seed(randomness_seed)
+
+    if use_cupy_over_torch:
+        cp.random.seed(randomness_seed)
 
 # set the gpu number if their is more than 1 gpu
 
