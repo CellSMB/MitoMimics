@@ -46,25 +46,44 @@ MitoMimics is designed to simulate temporal mitochondrial dynamics-based microsc
 To install MitoMimics, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/aidanpcquinn/mito_sim_pack.git`
-2. Navigate to the project directory: `cd mito_sim_pack`
-3. Install the required dependencies: `conda env create -f environment.yml`
+2. Navigate to the project directory: `cd MitoMimics/envs`
+3. Install the suitable environment:
+    - generic: `conda env create -f environment.yml`
+    - m-series mac: `conda env create -f environment_mSeriesMac.yml`
+4. Activate the conda environment with `conda activate mitodynamicsim` 
 
 ## Using the Simulation
 
-To use MitoMimics, follow these steps:
+To use MitoMimics for dataset generation, follow these steps:
 
-1. Open a terminal activate the conda environment with `conda activate mito_sim`
-2. Run the simulation script: `python sim.py`
-3. Specify simulation parameters by modifying the `sim.py` file directly.
-   - JSON file configuration will be added soon.
-5. Wait for the simulation to complete.
+1. Navigate to the MitoMimicsGeneration folder and run the simulation script: `python sim.py --seed 42`
+   - This generates the underlying simulation of the mitochondria morphology and dynamics
+   - parameters can be modified by running the editing gui with `python parameter_edit_gui.py`
+   - The files are saved in `MitoMimicsGeneration/sim_output/42`
+   - batch scripts for running multiple jobs `gen_multi_batch_sim.sh`
+2. Run the rendering script with `python renderer.py --seed 42 --cupy True --gpu 0`
+   - This renders the simulation into the synthetic microscopy stacks
+   - Parameters can be modified with X
+   - The files are saved in `MitoMimicsGeneration/render_output/42`
+   - batch scripts for running multiple jobs `gen_multi_batch_render.sh`
+3. To view the simulated data, run `python sim_napari_viewer.py --loc render_output/42`
    - The user can vary the timescale indefinitely by changing the `save_data` or `sim_length_seconds` variables.
-6. On simulation completion, generated data will automatically save in the output directory: `./out_stack`.
 
-## Viewing Saved Data
+## Training With Simulated Data
 
-1. See `view_output.ipynb`
-2. Demo output at `./out_stack/test_state_output.pkl`
+1. Download a processed synthetic training dataset (`Training_Data.tar.gz`) from https://zenodo.org/uploads/19603477
+2. Install Umamba (https://github.com/bowang-lab/U-Mamba) and follow instructions for dataset preperation and training
+   - We trained with `nnUNetv2_train DATSET_ID 3d_fullres 0 -tr nnUNetTrainerUMambaEnc -num_gpus 4` and otherwise default parameters
+3. Note: you will need to process and train on a dataset for both fullmasks and centerlines
+4. To use your own tiff stacks, see `2_1_raw_to_intermediary_demo.ipynb` and `2_2_intermediary_prepro.ipynb` in `/RealDataProcessing`
+  
+## Inference and Post Processing
+
+1. Download demo unlabaled photogentle sequences (`Unlabelled_Photogentle_Sequences.tar.gz`) from https://zenodo.org/uploads/19603477
+2. Run inference with both trained models on real dataset
+   - `nnUNetv2_predict -i raw_unlabaled_photogentle_sequences/ -o fullmask_out_location/ -d DATASET_ID -c 3d_fullres -f 0 -tr nnUNetTrainerUMambaEnc --disable_tta`
+3. Run Post processing scripts `3_1 to 5_3` in `/RealDataProcessing`. Use `python 3_1...py --help` to view arguments
+   - post processing needs the raw nifti stacks from step 1, and the outputs of both segmentation models in 2 
 
 ## Citation
 
