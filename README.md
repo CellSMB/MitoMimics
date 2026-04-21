@@ -68,16 +68,18 @@ To use MitoMimics for dataset generation, follow these steps:
 
 1. Navigate to the MitoMimicsGeneration folder and run the simulation script: `python sim.py --seed 42`
    - This generates the underlying simulation of the mitochondria morphology and dynamics
-   - Parameters can be modified in `parameters.yaml` or with `python parameter_edit_gui.py`
+   - Parameters can be modified in `parameters.yaml` or with `python parametes_gui.py`
    - The files are saved in `MitoMimicsGeneration/sim_output/42`
    - batch scripts for running multiple jobs `gen_multi_batch_sim.sh`
 2. Run the rendering script with `python renderer.py --seed 42 --cupy True --gpu 0`
    - This renders the simulation into the synthetic microscopy stacks
-   - Parameters can be modified in `parameters_render.yaml` or with `python parameter_edit_gui.py`
+   - Parameters can be modified in `parameters.yaml` or with `python parametes_gui.py`
    - The files are saved in `MitoMimicsGeneration/render_output/42`
    - batch scripts for running multiple jobs `gen_multi_batch_render.sh`
 3. To view the simulated data, run `python sim_napari_viewer.py --loc render_output/42`
    - The user can vary the timescale indefinitely by changing the `save_data` or `sim_length_seconds` variables.
+
+<img width="1420" height="905" alt="image" src="https://github.com/user-attachments/assets/4f45e242-b7f0-4dda-bcad-6c4d88830155" />
 
 ## Training With Simulated Data
 
@@ -114,4 +116,14 @@ For any questions, feedback, or potential collaborations, please contact the ori
 
   🐙 Github: [@VolkanOzcoban](https://github.com/VolkanOzcoban)
 
+- **Vijay Rajagopal** 
+
+  📧 [vijay.rajagopal@unimelb.edu.au](mailto:vijay.rajagopal@unimelb.edu.au)
+
+  🐙 Github: [@vraj004](https://github.com/vraj004)
+
 Please include “MitoMimics” in the subject line when contacting us.
+
+## CellSMB lab
+See more from our lab at our github: https://github.com/CellSMB
+
