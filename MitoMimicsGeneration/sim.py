@@ -158,7 +158,7 @@ nuc_points_sample = nucleus_parameters.get("nuc_points_sample", 18)
 nuc_rad_range = tuple(nucleus_parameters.get("nuc_rad_range", [0.8, 1]))
 
 # nuc leading edge range
-nuc_leading_edge_range = tuple(nucleus_parameters.get("nuc_leading_edge_range", [0.1, 0.3]))
+nuc_leading_edge_range = tuple(nucleus_parameters.get("percent_leading_edge_range", [0.1, 0.3]))
 nuc_leading_edge = random.uniform(nuc_leading_edge_range[0], nuc_leading_edge_range[1])*100
 
 
@@ -265,8 +265,7 @@ save_simulation_parameters = parameters.get("save_simulation_parameters", {})
 # Set whether or not to save the simulation
 save_data = save_simulation_parameters.get("save_data", True)
 
-# Simulation file name prefix
-sim_name_prefix = save_simulation_parameters.get("sim_name_prefix", "test2_")
+
 
 # Save path of simulation data
 save_path = save_simulation_parameters.get("save_path", "sim_output/")
@@ -321,9 +320,35 @@ display_type = render_display_parameters.get("display_type", "goal")
 # Display debug text
 debug_text = render_display_parameters.get("debug_text", True) 
 
+# Updated logic to read from YAML instead of hardcoding
+peri_fusion_params = parameters.get("peri_fusion_logic", {})
+peri_self_fusion_len_range = tuple(peri_fusion_params.get("peri_self_fusion_len_range", [5, 9]))
+dist_from_edge_fusion_adder = tuple(peri_fusion_params.get("dist_from_edge_fusion_adder", [0, 2]))
 
+bright_params = parameters.get("brightness_parameters", {})
+mito_brightness_range = tuple(bright_params.get("mito_brightness_range", [0.1, 1.0]))
+mito_brightness_max_var_from_start = bright_params.get("mito_brightness_max_var_from_start", 0.36)
+mito_brightness_single_period_max_range = bright_params.get("mito_brightness_single_period_max_range", 0.12)
+mito_brightness_period_frames = bright_params.get("mito_brightness_period_frames", 8)
 
-# seed set
+# _________________________________________________________
+# OUTERMEMSHAPEPARAMS (Now pulling from YAML)
+# _________________________________________________________
+shape_params = outer_membrane_parameters.get("shape_parameters", {})
+
+# Triangle settings
+tri_cfg = shape_params.get("triangle", {})
+triangle_om_samples = tri_cfg.get("samples", 40)
+triangle_om_interp_points = tri_cfg.get("interp_points", 2000)
+traingle_om_xy_translation = tri_cfg.get("xy_translation", 0.2)
+
+# Blob settings
+blob_cfg = shape_params.get("blob", {})
+blob_om_samples = blob_cfg.get("samples", 25)
+blob_om_rad_range = tuple(blob_cfg.get("rad_range", [0.65, 1.0]))
+blob_om_interp_points = blob_cfg.get("interp_points", 2000)
+blob_om_xy_trans = blob_cfg.get("xy_translation", 0.2)
+
 
 if args.seed is not None:
     seed = args.seed
@@ -349,32 +374,11 @@ random.seed(seed)
 np.random.seed(seed)
 
 
-#_________________________________________________________
-# PARAMS_TO_ADD_TO_YAML
-#_________________________________________________________
-
-# length before self fusion is possible in peri region
-peri_self_fusion_len_range = (5,9)
-
-# how much to randomly add to baseline dist form edge for min 
-dist_from_edge_fusion_adder = (0,2)
-
-# OUTERMEMSHAPEPARAMS
-triangle_om_samples = 40
-triangle_om_interp_points = 2000
-traingle_om_xy_translation = .2
-
-blob_om_samples = 25
-blob_om_rad_range = (0.65,1.0)
-blob_om_interp_points = 2000
-blob_om_xy_trans = .2
 
 
-# params that effect how much signal individual parts of the mitochondria give, and how much that changes over time
-mito_brightness_range = (0.1, 1)
-mito_brightness_max_var_from_start = 0.36
-mito_brightness_single_period_max_range = 0.12
-mito_brightness_period_frames = 8
+
+
+
 
 
 

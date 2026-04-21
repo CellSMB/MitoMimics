@@ -115,6 +115,26 @@ half_render_mult_factor = fixed_render_params['half_render_mult_factor']
 common_peri_area_cutoff = fixed_render_params['common_peri_area_cutoff']
 peri_average_mito_width_add = fixed_render_params['peri_average_mito_width_add']
 
+render_only_node_keep_probability = fixed_render_params['render_only_node_keep_probability']
+render_only_node_neighbor_add_probability = fixed_render_params['render_only_node_neighbor_add_probability']
+set_drop_patience = fixed_render_params['set_drop_patience']
+leaf_subset_shorten_probability = fixed_render_params['leaf_subset_shorten_probability']
+temporal_blob_size_low = fixed_render_params['temporal_blob_size_low']
+temporal_blob_size_high_base = fixed_render_params['temporal_blob_size_high_base']
+outer_mem_frame_midpoint_multiplier = fixed_render_params['outer_mem_frame_midpoint_multiplier']
+base_cell_gaussian_kernel_std = fixed_render_params['base_cell_gaussian_kernel_std']
+cell_gaussian_floor_fraction = fixed_render_params['cell_gaussian_floor_fraction']
+cell_bg_rescale_high = fixed_render_params['cell_bg_rescale_high']
+fusion_fission_dim_window = fixed_render_params['fusion_fission_dim_window']
+small_mito_node_threshold = fixed_render_params['small_mito_node_threshold']
+single_frame_disappear_chance_max = fixed_render_params['single_frame_disappear_chance_max']
+label_fmask_dilation_radius = fixed_render_params['label_fmask_dilation_radius']
+label_skeleton_dilation_radius = fixed_render_params['label_skeleton_dilation_radius']
+mito_blobiness = fixed_render_params['mito_blobiness']
+temporal_background_fraction = fixed_render_params['temporal_background_fraction']
+mito_peri_blobiness = fixed_render_params['mito_peri_blobiness']
+output_compression_scale = fixed_render_params['output_compression_scale']
+
 # Dynamic Params
 photon_conversion_range = (
     dynamic_render_params['photon_conversion_low'],
@@ -232,6 +252,16 @@ peri_signal_kernal_size_range = (
 )
 
 do_peri_glow_chance = dynamic_render_params['do_peri_glow_chance']
+small_mito_disappear_probability_denominator = dynamic_render_params['small_mito_disappear_probability_denominator']
+small_mito_disappear_dim_range = (
+    dynamic_render_params['small_mito_disappear_dim_low'],
+    dynamic_render_params['small_mito_disappear_dim_high'],
+)
+brightness_midpoint_threshold = dynamic_render_params['brightness_midpoint_threshold']
+brightness_midpoint_slope = dynamic_render_params['brightness_midpoint_slope']
+brightness_midpoint_intercept = dynamic_render_params['brightness_midpoint_intercept']
+mito_peri_blobs_rescale_high = dynamic_render_params['mito_peri_blobs_rescale_high']
+mito_peri_blobs_rescale_low = dynamic_render_params['mito_peri_blobs_rescale_low']
 
 peri_glow_clip_max_range = (
     dynamic_render_params['peri_glow_clip_max_low'],
@@ -524,11 +554,11 @@ def get_render_only_nodes(graph):
     for each in half_node_set:
 
         # chance for the start/end of disapear to be half rendered
-        if random.uniform(0, 1) > 0.05:
+        if random.uniform(0, 1) > render_only_node_keep_probability:
             
             real_remove_set.add(each)
             
-            if random.uniform(0, 1) > 0.5:
+            if random.uniform(0, 1) > render_only_node_neighbor_add_probability:
                 
                 for node in graph.neighbors(each):
                     real_remove_set.add(node)
@@ -1251,7 +1281,6 @@ if __name__ == "__main__":
     print('num sets made invisible:', num_drop_sets)
 
     # patience counter for trying to find new sets to drop
-    set_drop_patience = 1000
 
     # storage for the node sets to remove
     subset_drop_sets = list()
@@ -1303,7 +1332,7 @@ if __name__ == "__main__":
 
             for each in subset_nodes:
                 if nG.degree(each) == 1:
-                    if random.uniform(0,1) < 0.5:
+                    if random.uniform(0,1) < leaf_subset_shorten_probability:
                         current_drop_size -= 1
                         #print('shortended due to butting against start of crop')
             
@@ -1911,7 +1940,7 @@ if __name__ == "__main__":
 
     print(native_dims_for_out)
 
-    temporal_blob_array = add_blobs_3d(native_dims_for_out, num_blobs, 15, 19+blob_size_add)
+    temporal_blob_array = add_blobs_3d(native_dims_for_out, num_blobs, temporal_blob_size_low, temporal_blob_size_high_base + blob_size_add)
     temporal_blob_dict = dict()
     temporal_blob_idx_counter = 0
 
@@ -1933,7 +1962,7 @@ if __name__ == "__main__":
 
     # get a single frame from halfway through the video to generate the outer membrane layer of the render
     # this is static as those outer membrane locations are essentially static, and its a costly operation to do for every frame
-    outer_mem_frame = int(first_frame + 8 * vid_len/2)
+    outer_mem_frame = int(first_frame + outer_mem_frame_midpoint_multiplier * vid_len/2)
 
     # get point list of outermembrane, scale size by factor `shrink_factor`
     point_list = outer_mem_locs_dict[outer_mem_frame]
@@ -1972,7 +2001,7 @@ if __name__ == "__main__":
     cell_highligh_bg_thick_filled = skimage.morphology.flood_fill(cell_highligh_bg_thick, base_array_size, 1)
 
     # 3
-    big_gaussian_kernal = Gaussian2DKernel(x_stddev = 60, y_stddev = 60, theta = 0)
+    big_gaussian_kernal = Gaussian2DKernel(x_stddev = base_cell_gaussian_kernel_std, y_stddev = base_cell_gaussian_kernel_std, theta = 0)
 
 
     big_gaussian_kernal.shape
@@ -1992,7 +2021,7 @@ if __name__ == "__main__":
     # 4
     fsize_gauss = gaussian_kernel(size = hr_shape[0], sigma=cell_bg_glow_central_sigma)
     fsize_gauss_rescale = rescale_in_range(fsize_gauss, 2, 0)
-    conved_cell_highlight_bg_gauss_mult = conved_cell_highlight_bg * fsize_gauss_rescale + conved_cell_highlight_bg*0.3
+    conved_cell_highlight_bg_gauss_mult = conved_cell_highlight_bg * fsize_gauss_rescale + conved_cell_highlight_bg * cell_gaussian_floor_fraction
     conved_cell_highlight_bg_gauss_mult_rescaled = rescale_in_range(conved_cell_highlight_bg_gauss_mult, 1, 0)
 
 
@@ -2013,7 +2042,7 @@ if __name__ == "__main__":
     print(end - start)
 
     # 7 
-    conved_cell_highlight_bg_bigblobbed_gaussian_rescaled_rescaled = rescale_in_range(conved_cell_highlight_bg_bigblobbed_gaussian_rescaled, 1.1, 0)
+    conved_cell_highlight_bg_bigblobbed_gaussian_rescaled_rescaled = rescale_in_range(conved_cell_highlight_bg_bigblobbed_gaussian_rescaled, cell_bg_rescale_high, 0)
     conved_cell_highlight_bg_bigblobbed_gaussian_rescaled_rescaled_clipped =  np.clip(conved_cell_highlight_bg_bigblobbed_gaussian_rescaled_rescaled, 0, 1)
 
 
@@ -2093,9 +2122,9 @@ if __name__ == "__main__":
 
                         # if the time for the fusion/fission is within 16 frames of the current frame, dim the line based on the distance from the current frame
                         for time_val in matched_fusions_or_fission:
-                            if (i-16) < time_val and time_val < (i + 16):
+                            if (i-fusion_fission_dim_window) < time_val and time_val < (i + fusion_fission_dim_window):
                                 dist = abs(i - time_val)
-                                dimmer_mult = dist/16
+                                dimmer_mult = dist/fusion_fission_dim_window
 
                     # draw the line, with the dimmer mult applied
                     
@@ -2206,20 +2235,20 @@ if __name__ == "__main__":
             
             temp_disapear_mult = 1
             
-            if mito.number_of_nodes() < 6:
+            if mito.number_of_nodes() < small_mito_node_threshold:
                 
                 if len(temp_invis_list) > 0:
                     for old in temp_invis_list:
                         if graph_id == old[0] and curr_frame == old[1]+save_rate:
 
-                            if random.randint(0,3) == 1:
-                                temp_disapear_mult = random.uniform(0.001, 0.15)  
+                            if random.randint(0, small_mito_disappear_probability_denominator) == 1:
+                                temp_disapear_mult = random.uniform(small_mito_disappear_dim_range[0], small_mito_disappear_dim_range[1])  
                                 break
                 
-                chance_for_sing_frame_disapear = random.randint(0,128)
+                chance_for_sing_frame_disapear = random.randint(0, single_frame_disappear_chance_max)
                 if chance_for_sing_frame_disapear == 1:
                     
-                    temp_disapear_mult = random.uniform(0.001, 0.15)  
+                    temp_disapear_mult = random.uniform(small_mito_disappear_dim_range[0], small_mito_disappear_dim_range[1])  
                     
                     temp_invis_list.append((graph_id, curr_frame))          
             
@@ -2248,8 +2277,8 @@ if __name__ == "__main__":
                 midpoint = max(b1,b2) - (abs(b1-b2))/2
                 
                 
-                if midpoint> 0.18:
-                    midpoint = 1.2*midpoint - 0.12
+                if midpoint > brightness_midpoint_threshold:
+                    midpoint = brightness_midpoint_slope * midpoint - brightness_midpoint_intercept
                     
                     
                 dimmer_mult = 1
@@ -2263,9 +2292,9 @@ if __name__ == "__main__":
 
                     # if the time for the fusion/fission is within 16 frames of the current frame, dim the line based on the distance from the current frame
                     for time_val in matched_fusions_or_fission:
-                        if (i-16) < time_val and time_val < (i + 16):
+                        if (i-fusion_fission_dim_window) < time_val and time_val < (i + fusion_fission_dim_window):
                             dist = abs(i - time_val)
-                            dimmer_mult = dist/16
+                            dimmer_mult = dist/fusion_fission_dim_window
 
                 
                 # draw the line, with the dimmer mult applied
@@ -2307,7 +2336,7 @@ if __name__ == "__main__":
                 blank_frame_arr[rr,cc] = graph_id
                 
         # fmask label at double double res
-        label_native_rez = skimage.morphology.dilation(blank_frame_arr, skimage.morphology.disk(3)).astype(np.int32)
+        label_native_rez = skimage.morphology.dilation(blank_frame_arr, skimage.morphology.disk(label_fmask_dilation_radius)).astype(np.int32)
         
         # down ressed label
         label_real_rez = skimage.transform.resize(label_native_rez, (base_array_size[0]*save_mult, base_array_size[1]*save_mult), order=0, preserve_range=True, anti_aliasing=False).astype(np.uint16)
@@ -2318,7 +2347,7 @@ if __name__ == "__main__":
         
         
         # skeleton label
-        label_native_rez_lumen = skimage.morphology.dilation(blank_frame_arr, skimage.morphology.disk(1)).astype(np.int32)
+        label_native_rez_lumen = skimage.morphology.dilation(blank_frame_arr, skimage.morphology.disk(label_skeleton_dilation_radius)).astype(np.int32)
         
     
         
@@ -2352,7 +2381,7 @@ if __name__ == "__main__":
         base_mito_morph = skimage.morphology.dilation(base_mito_lines_hr, skimage.morphology.disk(int(np.floor(hr_render_mito_size/2)+mito_base_morph_size_add)))
         
         # 2
-        mito_blobs = gen_blobs_helper(base_mito_lines_hr.shape, 120)
+        mito_blobs = gen_blobs_helper(base_mito_lines_hr.shape, mito_blobiness)
         mito_blobs_scaled = rescale_in_range(mito_blobs, 1, mito_blob_impact_mult )
         mito_morph_blobbed = np.clip((base_mito_morph*mito_blobs_scaled), 0,1)
         
@@ -2415,13 +2444,13 @@ if __name__ == "__main__":
 
         
         
-        comb_bg_noises = bg_noise + temporal_noise_arr_conved_noised_shot * .40 * temporal_blob_intensity_mult
+        comb_bg_noises = bg_noise + temporal_noise_arr_conved_noised_shot * temporal_background_fraction * temporal_blob_intensity_mult
         
         # ------------- PERI SIGNAL GENERATION --------------------
         
         # finalise the peri array region and high signal areas
-        mito_peri_blobs = gen_blobs_helper(hr_shape, 30).astype(np.float32)
-        mito_peri_blobs_mult = rescale_in_range(mito_peri_blobs, 1.1, 0.9)
+        mito_peri_blobs = gen_blobs_helper(hr_shape, mito_peri_blobiness).astype(np.float32)
+        mito_peri_blobs_mult = rescale_in_range(mito_peri_blobs, mito_peri_blobs_rescale_high, mito_peri_blobs_rescale_low)
 
         photon_conversion = photon_conversion_rate_add_peri_glow
         noisy_peri_morph = np.random.poisson(np.clip(re_dilate_conved * photon_conversion, 0, None)) / photon_conversion
@@ -2521,8 +2550,8 @@ if __name__ == "__main__":
     # compressed
     
     if do_compress:
-        out_render_arr = (out_render_arr*256).astype(np.uint8)
-        out_render_double_res_raw_arr = (out_render_double_res_raw_arr*256).astype(np.uint8)
+        out_render_arr = (out_render_arr * output_compression_scale).astype(np.uint8)
+        out_render_double_res_raw_arr = (out_render_double_res_raw_arr * output_compression_scale).astype(np.uint8)
         out_render_skeleton_weighted_arr = out_render_skeleton_weighted_arr.astype(np.float16)
         out_render_fmask_weighted_arr = out_render_fmask_weighted_arr.astype(np.float16)
         
