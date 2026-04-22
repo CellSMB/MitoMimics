@@ -57,9 +57,7 @@ To install MitoMimics, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/aidanpcquinn/mito_sim_pack.git`
 2. Navigate to the project directory: `cd MitoMimics/envs`
-3. Install the suitable environment:
-    - generic: `conda env create -f environment.yml`
-    - m-series mac: `conda env create -f environment_mSeriesMac.yml`
+3. Install environment: `conda env create -f environment.yml`
 4. Activate the conda environment with `conda activate mitodynamicsim` 
 
 ## Using the Simulation
