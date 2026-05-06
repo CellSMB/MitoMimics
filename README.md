@@ -93,6 +93,17 @@ To use MitoMimics for dataset generation, follow these steps:
 2. Run inference with both trained models on real dataset
    - `nnUNetv2_predict -i raw_unlabaled_photogentle_sequences/ -o fullmask_out_location/ -d DATASET_ID -c 3d_fullres -f 0 -tr nnUNetTrainerUMambaEnc --disable_tta`
 3. Run Post processing scripts `3_1 to 5_3` in `/RealDataProcessing`. Use `python 3_1...py --help` to view arguments
+   - post processing needs the raw nifti stacks from step 1, and the outputs of both segmentation models in 2
+  
+## Inference with pretrained model
+
+1. Download demo unlabaled photogentle sequences (`Unlabelled_Photogentle_Sequences.tar.gz`) from https://zenodo.org/uploads/19603477
+2. Download the trained model weights ('Trained_UMamba_Models.zip') from https://zenodo.org/uploads/19603477
+3. Place the unziped folders in your UMamba install at `U-Mamba/data/nnUNet_results/`
+4. Run inference with both trained models on real dataset
+   - `nnUNetv2_predict -i raw_unlabaled_photogentle_sequences/ -o fullmask_out_location/ -d 901 -c 3d_fullres -f 0 -tr nnUNetTrainerUMambaEnc --disable_tta`
+   - `nnUNetv2_predict -i raw_unlabaled_photogentle_sequences/ -o centerline_out_location/ -d 902 -c 3d_fullres -f 0 -tr nnUNetTrainerUMambaEnc --disable_tta`
+5. Run Post processing scripts `3_1 to 5_3` in `/RealDataProcessing`. Use `python 3_1...py --help` to view arguments
    - post processing needs the raw nifti stacks from step 1, and the outputs of both segmentation models in 2 
 
 ## Citation
