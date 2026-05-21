@@ -81,7 +81,7 @@ To use MitoMimics for dataset generation, follow these steps:
 
 ## Training With Simulated Data
 
-1. Download a processed synthetic training dataset (`Training_Data.tar.gz`) from https://zenodo.org/uploads/19603477
+1. Download a processed synthetic training dataset (`Training_Data.tar.gz`) from https://zenodo.org/uploads/19603477 [REVIEWER TEMP LINK](https://zenodo.org/records/19603477?preview=1&token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjBhY2JmOGZmLWRkZGUtNDNlNy1iM2ZkLWQ3YTljZmU3NTM5OSIsImRhdGEiOnt9LCJyYW5kb20iOiI3MDJjYzM0OWI2NjgzNTI0NjEyNWQ2MTM0YTZlYjIyYSJ9.cjcXLHFKZV93Vc_9dw-6sGcadZTh2fUsz1QwhLrf0GweLAMogXZtTS5RXtYbeoPNWd3WOqmj4jXCaCShECHE6Q)
 2. Install Umamba (https://github.com/bowang-lab/U-Mamba) and follow instructions for dataset preperation and training
    - We trained with `nnUNetv2_train DATSET_ID 3d_fullres 0 -tr nnUNetTrainerUMambaEnc -num_gpus 4` and otherwise default parameters
 3. Note: you will need to process and train on a dataset for both fullmasks and centerlines
@@ -89,7 +89,7 @@ To use MitoMimics for dataset generation, follow these steps:
   
 ## Inference and Post Processing
 
-1. Download demo unlabaled photogentle sequences (`Unlabelled_Photogentle_Sequences.tar.gz`) from https://zenodo.org/uploads/19603477
+1. Download demo unlabaled photogentle sequences (`Unlabelled_Photogentle_Sequences.tar.gz`) from https://zenodo.org/uploads/19603477  [REVIEWER TEMP LINK](https://zenodo.org/records/19603477?preview=1&token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjBhY2JmOGZmLWRkZGUtNDNlNy1iM2ZkLWQ3YTljZmU3NTM5OSIsImRhdGEiOnt9LCJyYW5kb20iOiI3MDJjYzM0OWI2NjgzNTI0NjEyNWQ2MTM0YTZlYjIyYSJ9.cjcXLHFKZV93Vc_9dw-6sGcadZTh2fUsz1QwhLrf0GweLAMogXZtTS5RXtYbeoPNWd3WOqmj4jXCaCShECHE6Q)
 2. Run inference with both trained models on real dataset
    - `nnUNetv2_predict -i raw_unlabaled_photogentle_sequences/ -o fullmask_out_location/ -d DATASET_ID_fullmask -c 3d_fullres -f 0 -tr nnUNetTrainerUMambaEnc --disable_tta`
    - `nnUNetv2_predict -i raw_unlabaled_photogentle_sequences/ -o centerline_out_location/ -d DATASET_ID_centerline -c 3d_fullres -f 0 -tr nnUNetTrainerUMambaEnc --disable_tta`
@@ -98,8 +98,8 @@ To use MitoMimics for dataset generation, follow these steps:
   
 ## Inference with pretrained model
 
-1. Download demo unlabaled photogentle sequences (`Unlabelled_Photogentle_Sequences.tar.gz`) from https://zenodo.org/uploads/19603477
-2. Download the trained model weights ('Trained_UMamba_Models.zip') from https://zenodo.org/uploads/19603477
+1. Download demo unlabaled photogentle sequences (`Unlabelled_Photogentle_Sequences.tar.gz`) from https://zenodo.org/uploads/19603477  [REVIEWER TEMP LINK](https://zenodo.org/records/19603477?preview=1&token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjBhY2JmOGZmLWRkZGUtNDNlNy1iM2ZkLWQ3YTljZmU3NTM5OSIsImRhdGEiOnt9LCJyYW5kb20iOiI3MDJjYzM0OWI2NjgzNTI0NjEyNWQ2MTM0YTZlYjIyYSJ9.cjcXLHFKZV93Vc_9dw-6sGcadZTh2fUsz1QwhLrf0GweLAMogXZtTS5RXtYbeoPNWd3WOqmj4jXCaCShECHE6Q)
+2. Download the trained model weights ('Trained_UMamba_Models.zip') from https://zenodo.org/uploads/19603477 [REVIEWER TEMP LINK](https://zenodo.org/records/19603477?preview=1&token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjBhY2JmOGZmLWRkZGUtNDNlNy1iM2ZkLWQ3YTljZmU3NTM5OSIsImRhdGEiOnt9LCJyYW5kb20iOiI3MDJjYzM0OWI2NjgzNTI0NjEyNWQ2MTM0YTZlYjIyYSJ9.cjcXLHFKZV93Vc_9dw-6sGcadZTh2fUsz1QwhLrf0GweLAMogXZtTS5RXtYbeoPNWd3WOqmj4jXCaCShECHE6Q)
 3. Place the unziped folders in your UMamba install at `U-Mamba/data/nnUNet_results/`
 4. Run inference with both trained models on real dataset
    - `nnUNetv2_predict -i raw_unlabaled_photogentle_sequences/ -o fullmask_out_location/ -d 901 -c 3d_fullres -f 0 -tr nnUNetTrainerUMambaEnc --disable_tta`
