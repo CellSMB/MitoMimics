@@ -22,7 +22,5 @@ dependencies:
   - scikit-learn
   - opencv==4.10.0
   - napari
-  - pypardiso
-  - cupy
   - pymunk==6.8.1
   - pyqt
