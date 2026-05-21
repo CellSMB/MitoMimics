@@ -53,7 +53,7 @@ MitoMimics is designed to simulate temporal mitochondrial dynamics-based microsc
 
 ## Installation
 
-To install MitoMimics, follow these steps (tested on macOS Sequoia - Tahoe, and Ubunutu 20.04 - 22.04):
+To install MitoMimics, follow these steps (tested on macOS Sequoia - Tahoe, and Ubunutu 20.04 - 22.04) (Install time 5-15 minutes):
 
 1. Clone the repository: `git clone https://github.com/aidanpcquinn/mito_sim_pack.git`
 2. Navigate to the project directory: `cd MitoMimics/envs`
@@ -62,7 +62,7 @@ To install MitoMimics, follow these steps (tested on macOS Sequoia - Tahoe, and 
 
 ## Using the Simulation
 
-To use MitoMimics for dataset generation, follow these steps:
+To use MitoMimics for dataset generation, follow these steps (Run time: <10 minutes per simulated image stack with default parameters):
 
 1. Navigate to the MitoMimicsGeneration folder and run the simulation script: `python sim.py --seed 42`
    - This generates the underlying simulation of the mitochondria morphology and dynamics
@@ -80,6 +80,8 @@ To use MitoMimics for dataset generation, follow these steps:
 <img width="1420" height="905" alt="image" src="https://github.com/user-attachments/assets/4f45e242-b7f0-4dda-bcad-6c4d88830155" />
 
 ## Training With Simulated Data
+
+To use MitoMimics for training on generated synthetic data, follow these steps (Run Time: 24 hours, on 4x NVIDIA H100s)
 
 1. Download a processed synthetic training dataset (`Training_Data.tar.gz`) from https://zenodo.org/uploads/19603477 [REVIEWER TEMP LINK](https://zenodo.org/records/19603477?preview=1&token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjBhY2JmOGZmLWRkZGUtNDNlNy1iM2ZkLWQ3YTljZmU3NTM5OSIsImRhdGEiOnt9LCJyYW5kb20iOiI3MDJjYzM0OWI2NjgzNTI0NjEyNWQ2MTM0YTZlYjIyYSJ9.cjcXLHFKZV93Vc_9dw-6sGcadZTh2fUsz1QwhLrf0GweLAMogXZtTS5RXtYbeoPNWd3WOqmj4jXCaCShECHE6Q)
 2. Install Umamba (https://github.com/bowang-lab/U-Mamba) and follow instructions for dataset preperation and training
