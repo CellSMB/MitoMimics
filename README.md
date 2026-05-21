@@ -53,7 +53,7 @@ MitoMimics is designed to simulate temporal mitochondrial dynamics-based microsc
 
 ## Installation
 
-To install MitoMimics, follow these steps:
+To install MitoMimics, follow these steps (tested on macOS Sequoia - Tahoe, and Ubunutu 20.04 - 22.04):
 
 1. Clone the repository: `git clone https://github.com/aidanpcquinn/mito_sim_pack.git`
 2. Navigate to the project directory: `cd MitoMimics/envs`
