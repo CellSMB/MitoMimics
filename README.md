@@ -69,11 +69,12 @@ To use MitoMimics for dataset generation, follow these steps (Run time: <10 minu
    - Parameters can be modified in `parameters.yaml` or with `python parametes_gui.py`
    - The files are saved in `MitoMimicsGeneration/sim_output/42`
    - batch scripts for running multiple jobs `gen_multi_batch_sim.sh`
-2. Run the rendering script with `python renderer.py --seed 42 --cupy True --gpu 0`
+2. Run the rendering script with `python renderer.py --seed 42 --gpu 0`
    - This renders the simulation into the synthetic microscopy stacks
    - Parameters can be modified in `parameters.yaml` or with `python parametes_gui.py`
    - The files are saved in `MitoMimicsGeneration/render_output/42`
    - batch scripts for running multiple jobs `gen_multi_batch_render.sh`
+   - Note: on CUDA accelerated systems the cupy library can be installed, the flag --cupy True may speed up rendering.
 3. To view the simulated data, run `python sim_napari_viewer.py --loc render_output/42`
    - The user can vary the timescale indefinitely by changing the `save_data` or `sim_length_seconds` variables.
 
