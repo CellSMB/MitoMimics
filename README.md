@@ -113,7 +113,7 @@ To use MitoMimics for training on generated synthetic data, follow these steps (
 
 ## License
 
-MitoMimics © 2024 by Aidan Quinn & Volkan Ozcoban is licensed under GPL-3.0
+MitoMimics © 2026 by Aidan Quinn, Volkan Ozcoban & Vijay Rajagopal is licensed under GPL-3.0
 
 ## Contact
 For any questions, feedback, or potential collaborations, please contact the original authors of MitoMimics: 
